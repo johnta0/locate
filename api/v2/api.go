@@ -10,6 +10,7 @@
 //  --------------------------------------------------------
 //  YES     | YES          | API-Key, High Availability Pool
 //  YES     | NO           | API-Key, Best Effort Pool
+//  NO      | YES          | Global High Availability Pool
 //  NO      | NO           | Global Best Effort Pool
 //
 // For highest priority access to the platform, register an API key and use the
@@ -63,13 +64,14 @@ type MonitoringResult struct {
 // will be handled as if no access token were provided, i.e. using a lower
 // priority class.
 type NextRequest struct {
-	// NotBefore defines the time after which the URL will become valid. This
-	// value is the same time used in "nbf" field of the underlying JSON Web
-	// Token (JWT) claim. To show this equivalence, we use the same name.
-	NotBefore time.Time `json:"nbf"`
+	// Wait defines the number of seconds the client should wait before using
+	// the NextRequest.URL. The access token in the URL will not be valid until
+	// Wait seconds have passed. Wait is the difference between the "not before"
+	// time in the access token and "issue" time.
+	Wait int64 `json:"wait"`
 
 	// Expires defines the time after which the URL will be invalid. Expires will
-	// always be greater than NotBefore. This value is the same time used in the
+	// always be greater than `now() + Wait`. This value is the same time used in the
 	// "exp" field of the underlying JWT claim.
 	Expires time.Time `json:"exp"`
 
