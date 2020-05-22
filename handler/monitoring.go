@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/m-lab/access/controller"
 	"github.com/m-lab/go/host"
@@ -40,7 +41,7 @@ func (c *Client) Monitoring(rw http.ResponseWriter, req *http.Request) {
 
 	// Get monitoring subject access tokens for the given machine.
 	machine := cl.Subject
-	token := c.getAccessToken(machine, static.SubjectMonitoring)
+	token := c.getAccessToken(machine, static.SubjectMonitoring, time.Now().Add(time.Minute))
 	urls := c.getURLs(ports, machine, experiment, token)
 	result.AccessToken = token
 	result.Target = &v2.Target{
