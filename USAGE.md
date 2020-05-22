@@ -17,7 +17,7 @@ service operations and describe currently supported queries in more detail.
 
 #### When best means "geographically close"
 
-GCP automatically adds client latitude and latitude to the [HTTP
+GCP automatically adds client latitude and longitude to incoming [HTTP
 request headers][headers]. The locate service uses this location to search
 for nearby M-Lab servers that satisfy the client query.
 
@@ -27,7 +27,9 @@ The locate service also considers:
 
 * is the target server online? (required)
 * is the client request frequency consistent with acceptable usage? (required)
-* is the target server in the same country as the client? (biased)
+
+> PLANNED(v2): the locate service will bias results to be in the same country
+as the client.
 
 The locate service returns up to four results for the requested measurement
 service. The locate service may return fewer results when too few servers are
@@ -35,9 +37,9 @@ healthy in a geographic region. The locate service may return an error when
 no servers are available.
 
 > PLANNED(v2): in all cases above, the locate service will return a
-recommended [v2.QueryResult.NextRequest][nextRequest] time and preformatted
-URL for the client to reissue the query. This will make retry logic in
-clients simpler and incentivise best practices for the API. See the [request
+recommended [v2.QueryResult.NextRequest][nextRequest] time and signed URL for
+the client to reissue the query. This will make retry logic in clients
+simpler and incentivises best practices for the API. See the [request
 priority hierarchy][priority].
 
 [nextRequest]: https://godoc.org/github.com/m-lab/locate/api/v2#QueryResult
