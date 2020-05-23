@@ -4,7 +4,7 @@
 
 | Version  | Date       |  Major Changes  |
 |----------|------------|-----------------|
-| v2beta1  | 2020-05-11 | initial version |
+| v2beta1  | 2020-05-21 | initial version |
 
 ## Introduction
 
@@ -26,7 +26,7 @@ for nearby M-Lab servers that satisfy the client query.
 The locate service also considers:
 
 * is the target server online? (required)
-* is the client request frequency consistent with acceptable usage? (required)
+* is the client request frequency [acceptable usage][aup]? (required)
 
 > PLANNED(v2): the locate service will bias results to be in the same country
 as the client.
@@ -38,14 +38,15 @@ no servers are available.
 
 > PLANNED(v2): in all cases above, the locate service will return a
 recommended [v2.QueryResult.NextRequest][nextRequest] time and signed URL for
-the client to reissue the query. This will make retry logic in clients
-simpler and incentivises best practices for the API. See the [request
-priority hierarchy][priority].
+the client to issue the next request. This will make retry logic in clients
+simpler and encourages best practices for the API. See the [request priority
+hierarchy][priority].
 
 [nextRequest]: https://godoc.org/github.com/m-lab/locate/api/v2#QueryResult
 [priority]: https://godoc.org/github.com/m-lab/locate/api/v2
+[aup]: https://www.measurementlab.net/aup
 
-#### Query for geographically close servers
+#### Query for Geographically Close Servers
 
 The base URL for the locate service to query for geographically close
 servers:
