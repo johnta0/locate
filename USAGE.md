@@ -52,6 +52,13 @@ The base URL for the locate service to query for geographically close
 servers:
 
     http://locate.measurementlab.net/v2beta1/query/
+    /v2beta2/personal/nearest/
+    /v2beta2/priority/nearest/
+    /v2beta2/enrolled/nearest/
+    /v2beta2/register/nearest/
+    /v2beta2/applied/nearest/
+    /v2beta2/registered/nearest/
+    /v2beta2/distributed/nearest/
 
 Well formed requests must specify a service name. For example:
 
