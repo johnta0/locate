@@ -4,7 +4,7 @@
 
 | Version  | Date       |  Major Changes  |
 |----------|------------|-----------------|
-| v2beta1  | 2020-05-21 | initial version |
+| v2beta2  | 2020-05-21 | initial version |
 
 ## Introduction
 
@@ -51,14 +51,7 @@ hierarchy][priority].
 The base URL for the locate service to query for geographically close
 servers:
 
-    http://locate.measurementlab.net/v2beta1/query/
-    /v2beta2/personal/nearest/
-    /v2beta2/priority/nearest/
-    /v2beta2/enrolled/nearest/
-    /v2beta2/register/nearest/
-    /v2beta2/applied/nearest/
-    /v2beta2/registered/nearest/
-    /v2beta2/distributed/nearest/
+    http://locate.measurementlab.net/v2beta2/personal/nearest/
 
 Well formed requests must specify a service name. For example:
 
@@ -70,7 +63,7 @@ will support queries to the base URL.
 
 A complete locate query request with service name (e.g. ndt/ndt7) looks like:
 
-    http://locate.measurementlab.net/v2beta1/query/ndt/ndt7
+    http://locate.measurementlab.net/v2beta2/personal/nearest/ndt/ndt7
 
 A successful response will include a list of results. Each result object
 includes the machine name and a map of "urls"; the key is the URL template
