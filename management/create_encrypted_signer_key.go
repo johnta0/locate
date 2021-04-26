@@ -137,8 +137,7 @@ func main() {
 				echo ""
 				echo "env_variables:"
 				echo "  LOCATE_SIGNER_KEY: \"${ENC_SIGNER_KEY}\""
-				echo "  MONITORING_VERIFY_KEY: \"${ENC_VERIFY_KEY}\""
-      `),
+				echo "  MONITORING_VERIFY_KEY: \"${ENC_VERIFY_KEY}\""`),
 		),
 	)
 	if dryrun {
