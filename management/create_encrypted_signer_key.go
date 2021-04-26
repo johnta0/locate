@@ -43,8 +43,8 @@ func main() {
 		shx.SetEnv("GCPARGS", "--project="+project),
 		shx.SetEnvFromJob("keyring",
 			shx.System(`gcloud ${GCPARGS} kms keyrings list \
-        --location global --format='value(name)' \
-        --filter "name~.*/${KEYRING}$" || :`),
+				--location global --format='value(name)' \
+				--filter "name~.*/${KEYRING}$" || :`),
 		),
 		shx.IfVarEmpty("keyring",
 			shx.Script(
@@ -55,34 +55,34 @@ func main() {
 		// Create key within keyring if it's not already present.
 		shx.SetEnvFromJob("key",
 			shx.System(`gcloud ${GCPARGS} kms keys list \
-        --location global \
-        --keyring ${KEYRING} --format='value(name)' \
-        --filter "name~.*/${KEYNAME}$" || :`),
+				--location global \
+				--keyring ${KEYRING} --format='value(name)' \
+				--filter "name~.*/${KEYNAME}$" || :`),
 		),
 		shx.IfVarEmpty("key",
 			shx.Script(
 				shx.System(`echo "Creating key: ${KEYNAME}"`),
 				shx.System(`gcloud ${GCPARGS} kms keys create ${KEYNAME} \
-          --location=global \
-          --keyring=${KEYRING} \
-          --purpose=encryption`),
+						--location=global \
+						--keyring=${KEYRING} \
+						--purpose=encryption`),
 			),
 		),
 		// Allow AppEngine service account to access key, if it doesn't already.
 		shx.SetEnvFromJob("binding",
 			shx.System(`gcloud ${GCPARGS} kms keys get-iam-policy ${KEYNAME} \
-			    --location global \
-			    --keyring ${KEYRING} \
-			    | grep serviceAccount:${PROJECT}@appspot.gserviceaccount.com || : `),
+							--location global \
+							--keyring ${KEYRING} \
+							| grep serviceAccount:${PROJECT}@appspot.gserviceaccount.com || : `),
 		),
 		shx.IfVarEmpty("binding",
 			shx.Script(
 				shx.System(`echo "Binding iam policy for accessing ${KEYRING}/${KEYNAME}"`),
 				shx.System(`gcloud ${GCPARGS} kms keys add-iam-policy-binding ${KEYNAME} \
-			    --location=global \
-			    --keyring=${KEYRING} \
-			    --member=serviceAccount:${PROJECT}@appspot.gserviceaccount.com \
-			    --role=roles/cloudkms.cryptoKeyDecrypter`),
+							--location=global \
+							--keyring=${KEYRING} \
+							--member=serviceAccount:${PROJECT}@appspot.gserviceaccount.com \
+							--role=roles/cloudkms.cryptoKeyDecrypter`),
 			),
 		),
 		// Check if jwk-keygen exists.
@@ -115,8 +115,8 @@ func main() {
 			shx.Pipe(
 				shx.ReadFile(locatePrivate),
 				shx.System(`gcloud ${GCPARGS} kms encrypt --location=global \
-          --plaintext-file=- --ciphertext-file=- \
-          --keyring=${KEYRING} --key=${KEYNAME}`),
+					--plaintext-file=- --ciphertext-file=- \
+					--keyring=${KEYRING} --key=${KEYNAME}`),
 				shx.Exec("base64"),
 			),
 		),
@@ -125,19 +125,19 @@ func main() {
 			shx.Pipe(
 				shx.ReadFile(monitoringPrivate+".pub"),
 				shx.System(`gcloud ${GCPARGS} kms encrypt --location=global \
-          --plaintext-file=- --ciphertext-file=- \
-          --keyring=${KEYRING} --key=${KEYNAME}`),
+					--plaintext-file=- --ciphertext-file=- \
+					--keyring=${KEYRING} --key=${KEYNAME}`),
 				shx.Exec("base64"),
 			),
 		),
 		shx.Script(
 			shx.System(`
-        echo ""
-        echo "Include the following in app.yaml.${PROJECT}:"
-        echo ""
-        echo "env_variables:"
-        echo "  LOCATE_SIGNER_KEY: \"${ENC_SIGNER_KEY}\""
-        echo "  MONITORING_VERIFY_KEY: \"${ENC_VERIFY_KEY}\""
+				echo ""
+				echo "Include the following in app.yaml.${PROJECT}:"
+				echo ""
+				echo "env_variables:"
+				echo "  LOCATE_SIGNER_KEY: \"${ENC_SIGNER_KEY}\""
+				echo "  MONITORING_VERIFY_KEY: \"${ENC_VERIFY_KEY}\""
       `),
 		),
 	)
