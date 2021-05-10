@@ -1,8 +1,8 @@
  1: (
- 2:   export PROJECT=mlab-sandbox
- 3:   export KEYRING=soltesz-test-locate-signer
- 4:   export KEYNAME=soltesz-test-jwk
- 5:   export GCPARGS=--project=mlab-sandbox
+ 2:   export PROJECT="mlab-sandbox"
+ 3:   export KEYRING="soltesz-test-locate-signer"
+ 4:   export KEYNAME="soltesz-test-jwk"
+ 5:   export GCPARGS="--project=mlab-sandbox"
  6:   export keyring=$(/bin/sh -c gcloud ${GCPARGS} kms keyrings list \
 				--location global --format='value(name)' \
 				--filter "name~.*/${KEYRING}$" || :)
@@ -47,39 +47,36 @@
 32:       /bin/sh -c exit 1
 33:     )
 34:   fi
-35:   export LOCATE_PRIVATE=jwk_sig_EdDSA_locate_202105
-36:   export MONITORING_PRIVATE=jwk_sig_EdDSA_monitoring_202105
-37:   if [[ ! -f jwk_sig_EdDSA_locate_202105 ]] ; then
+35:   export LOCATE_PRIVATE="jwk_sig_EdDSA_locate_"
+36:   export MONITORING_PRIVATE="jwk_sig_EdDSA_monitoring_"
+37:   if [[ ! -f jwk_sig_EdDSA_locate_ ]] ; then
 38:     (
 39:       /bin/sh -c echo "Creating private locate key: ${LOCATE_PRIVATE}"
-40:       /bin/sh -c jwk-keygen --use=sig --alg=EdDSA --kid=locate_202105
+40:       /bin/sh -c jwk-keygen --use=sig --alg=EdDSA --kid=locate_
 41:     )
 42:   fi
-43:   if [[ ! -f jwk_sig_EdDSA_monitoring_202105 ]] ; then
+43:   if [[ ! -f jwk_sig_EdDSA_monitoring_ ]] ; then
 44:     (
 45:       /bin/sh -c echo "Creating private monitoring key: ${MONITORING_PRIVATE}"
-46:       /bin/sh -c jwk-keygen --use=sig --alg=EdDSA --kid=monitoring_202105
+46:       /bin/sh -c jwk-keygen --use=sig --alg=EdDSA --kid=monitoring_
 47:     )
 48:   fi
 49:   /bin/sh -c echo "Encrypting private locate signer key:"
-50:   export ENC_SIGNER_KEY=$(51:   cat < jwk_sig_EdDSA_locate_202105 | /bin/sh -c gcloud ${GCPARGS} kms encrypt --location=global \
+50:   export ENC_SIGNER_KEY=$(cat < jwk_sig_EdDSA_locate_ | /bin/sh -c gcloud ${GCPARGS} kms encrypt --location=global \
 					--plaintext-file=- --ciphertext-file=- \
-					--keyring=${KEYRING} --key=${KEYNAME} | base64
-52:   )
-
-53:   /bin/sh -c echo "Encrypting public monitoring verify key:"
-54:   export ENC_VERIFY_KEY=$(55:   cat < jwk_sig_EdDSA_monitoring_202105.pub | /bin/sh -c gcloud ${GCPARGS} kms encrypt --location=global \
+					--keyring=${KEYRING} --key=${KEYNAME} | base64)
+51:   /bin/sh -c echo "Encrypting public monitoring verify key:"
+52:   export ENC_VERIFY_KEY=$(cat < jwk_sig_EdDSA_monitoring_.pub | /bin/sh -c gcloud ${GCPARGS} kms encrypt --location=global \
 					--plaintext-file=- --ciphertext-file=- \
-					--keyring=${KEYRING} --key=${KEYNAME} | base64
-56:   )
-
-57:   (
-58:     /bin/sh -c 
+					--keyring=${KEYRING} --key=${KEYNAME} | base64)
+53:   (
+54:     /bin/sh -c 
 				echo ""
 				echo "Include the following in app.yaml.${PROJECT}:"
 				echo ""
 				echo "env_variables:"
 				echo "  LOCATE_SIGNER_KEY: \"${ENC_SIGNER_KEY}\""
 				echo "  MONITORING_VERIFY_KEY: \"${ENC_VERIFY_KEY}\""
-59:   )
-60: )
+55:   )
+56: )
+
