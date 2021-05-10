@@ -1,4 +1,4 @@
-// create_encrypted_signer_key.sh generates encrypted JWT signer keys and
+// Package main create_encrypted_signer_key.sh generates encrypted JWT signer keys and
 // creates the necessary KMS keyring and key.
 package main
 
@@ -41,6 +41,8 @@ func main() {
 		shx.SetEnv("KEYRING", keyring),
 		shx.SetEnv("KEYNAME", keyname),
 		shx.SetEnv("GCPARGS", "--project="+project),
+		shx.SetEnv("LOCATE_PRIVATE", locatePrivate),
+		shx.SetEnv("MONITORING_PRIVATE", monitoringPrivate),
 		shx.SetEnvFromJob("keyring",
 			shx.System(`gcloud ${GCPARGS} kms keyrings list \
 				--location global --format='value(name)' \
@@ -48,7 +50,7 @@ func main() {
 		),
 		shx.IfVarEmpty("keyring",
 			shx.Script(
-				shx.System(`echo "Creating keyring: ${KEYRING}"`),
+				shx.Println("Creating keyring: ${KEYRING}"),
 				shx.System("gcloud ${GCPARGS} kms keyrings create ${KEYRING} --location=global"),
 			),
 		),
@@ -61,7 +63,7 @@ func main() {
 		),
 		shx.IfVarEmpty("key",
 			shx.Script(
-				shx.System(`echo "Creating key: ${KEYNAME}"`),
+				shx.Println("Creating key: ${KEYNAME}"),
 				shx.System(`gcloud ${GCPARGS} kms keys create ${KEYNAME} \
 					--location=global \
 					--keyring=${KEYRING} \
@@ -70,14 +72,17 @@ func main() {
 		),
 		// Allow AppEngine service account to access key, if it doesn't already.
 		shx.SetEnvFromJob("binding",
-			shx.System(`gcloud ${GCPARGS} kms keys get-iam-policy ${KEYNAME} \
+			shx.Pipe(
+				shx.System(`gcloud ${GCPARGS} kms keys get-iam-policy ${KEYNAME} \
 					--location global \
-					--keyring ${KEYRING} \
-					| grep serviceAccount:${PROJECT}@appspot.gserviceaccount.com || : `),
+					--keyring ${KEYRING} || :
+				`),
+				shx.System("grep serviceAccount:${PROJECT}@appspot.gserviceaccount.com"),
+			),
 		),
 		shx.IfVarEmpty("binding",
 			shx.Script(
-				shx.System(`echo "Binding iam policy for accessing ${KEYRING}/${KEYNAME}"`),
+				shx.Println("Binding iam policy for accessing ${KEYRING}/${KEYNAME}"),
 				shx.System(`gcloud ${GCPARGS} kms keys add-iam-policy-binding ${KEYNAME} \
 					--location=global \
 					--keyring=${KEYRING} \
@@ -89,28 +94,26 @@ func main() {
 		shx.SetEnvFromJob("JWK_KEYGEN", shx.System("which jwk-keygen || :")),
 		shx.IfVarEmpty("JWK_KEYGEN",
 			shx.Script(
-				shx.System("echo 'ERROR: jwk-keygen not found!'"),
-				shx.System("echo 'Run: go get gopkg.in/square/go-jose.v2/jwk-keygen'"),
+				shx.Println("ERROR: jwk-keygen not found!"),
+				shx.Println("FIX by running: go get gopkg.in/square/go-jose.v2/jwk-keygen"),
 				shx.System("exit 1"),
 			),
 		),
-		shx.SetEnv("LOCATE_PRIVATE", locatePrivate),
-		shx.SetEnv("MONITORING_PRIVATE", monitoringPrivate),
 		shx.IfFileMissing(locatePrivate,
 			// Create locate JWK key.
 			shx.Script(
-				shx.System(`echo "Creating private locate key: ${LOCATE_PRIVATE}"`),
+				shx.Println("Creating private locate key: ${LOCATE_PRIVATE}"),
 				shx.System(`jwk-keygen --use=sig --alg=EdDSA --kid=locate_`+keyid),
 			),
 		),
 		shx.IfFileMissing(monitoringPrivate,
 			// Create monitoring JWK key.
 			shx.Script(
-				shx.System(`echo "Creating private monitoring key: ${MONITORING_PRIVATE}"`),
+				shx.Println("Creating private monitoring key: ${MONITORING_PRIVATE}"),
 				shx.System(`jwk-keygen --use=sig --alg=EdDSA --kid=monitoring_`+keyid),
 			),
 		),
-		shx.System(`echo "Encrypting private locate signer key:"`),
+		shx.Println("Encrypting private locate signer key:"),
 		shx.SetEnvFromJob("ENC_SIGNER_KEY",
 			shx.Pipe(
 				shx.ReadFile(locatePrivate),
@@ -120,7 +123,7 @@ func main() {
 				shx.Exec("base64"),
 			),
 		),
-		shx.System(`echo "Encrypting public monitoring verify key:"`),
+		shx.Println("Encrypting public monitoring verify key:"),
 		shx.SetEnvFromJob("ENC_VERIFY_KEY",
 			shx.Pipe(
 				shx.ReadFile(monitoringPrivate+".pub"),
@@ -131,13 +134,10 @@ func main() {
 			),
 		),
 		shx.Script(
-			shx.System(`
-				echo ""
-				echo "Include the following in app.yaml.${PROJECT}:"
-				echo ""
-				echo "env_variables:"
-				echo "  LOCATE_SIGNER_KEY: \"${ENC_SIGNER_KEY}\""
-				echo "  MONITORING_VERIFY_KEY: \"${ENC_VERIFY_KEY}\""`),
+			shx.Println("Include the following in app.yaml.${PROJECT}:"),
+			shx.Println("env_variables:"),
+			shx.Println("  LOCATE_SIGNER_KEY: \"${ENC_SIGNER_KEY}\""),
+			shx.Println("  MONITORING_VERIFY_KEY: \"${ENC_VERIFY_KEY}\""),
 		),
 	)
 	if dryrun {
